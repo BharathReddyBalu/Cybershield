@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ─────────────────────────────────────────────── -->
+<div class="row align-items-center mb-5 fade-up" style="padding:1.5rem 0 0;">
+  <div class="col-lg-8">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <div class="pulse-dot"></div>
+      <span style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);">All systems operational</span>
+    </div>
+    <h1 class="mb-2">
+      Welcome back,&nbsp;<span class="text-gradient">{{ user['username'] }}</span>&nbsp;👋
+    </h1>
+    <p class="mb-0" style="font-size:1rem;color:var(--muted);max-width:480px;">
+      Your personal 
+      <span id="hero-typed" class="text-gradient-cyan" data-words="security command center.|threat intelligence hub.|privacy toolkit.">security command center.</span>
+    </p>
+  </div>
+  <div class="col-lg-4 d-none d-lg-flex justify-content-end gap-2 pt-3 pt-lg-0">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('logout') }}">
+      <i class="bi bi-box-arrow-right"></i> Sign out
+    </a>
+  </div>
+</div>
+
+<!-- ── Stat cards ─────────────────────────────────────────── -->
+<div class="row g-3 mb-5">
+  {% set stats = [
+    (total_scans,                             'Total Scans',      'bi-activity',        'var(--g-primary)'),
+    (scan_counts.get('password_checker', 0),  'Password Checks',  'bi-shield-lock',     'var(--g-primary)'),
+    (scan_counts.get('url_scanner', 0),       'URL Scans',        'bi-radar',           'var(--g-primary)'),
+    (scan_counts.get('file_checker', 0),      'File Hashes',      'bi-fingerprint',     'var(--g-primary)'),
+  ] %}
+  {% for val, label, icon, _ in stats %}
+  <div class="col-6 col-md-3 fade-up">
+    <div class="stat-card">
+      <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+        <i class="bi {{ icon }}" style="font-size:.9rem;color:rgba(79,116,255,.6);"></i>
+      </div>
+      <div class="stat-val" data-count="{{ val }}">{{ val }}</div>
+      <div class="stat-label">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- ── Tool section heading ───────────────────────────────── -->
+<div class="d-flex align-items-center gap-2 mb-4 fade-up">
+  <div class="section-bar" style="background:var(--g-primary);"></div>
+  <h5 class="mb-0">Security Tools</h5>
+  <span class="badge ms-1" style="background:rgba(79,116,255,.1);border:1px solid rgba(79,116,255,.22);color:#8ab4ff;font-size:.66rem;">3 active</span>
+</div>
+
+<!-- ── Tool cards ─────────────────────────────────────────── -->
+<div class="row g-4 mb-5">
+
+  <!-- Password Analyzer -->
+  <div class="col-md-4 fade-up">
+    <div class="card h-100 tool-card">
+      <div class="tc-glow"></div>
+      <div class="tc-stripe" style="background:var(--g-primary);"></div>
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-start gap-3 mb-4">
+          <div class="tool-icon">🔐</div>
+          <div>
+            <h5 class="mb-1">Password Analyzer</h5>
+            <p class="mb-0" style="font-size:.82rem;">Real-time strength scoring with interactive criterion breakdown.</p>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-4" style="font-size:.68rem;">
+          <span class="badge" style="background:rgba(79,116,255,.12);border:1px solid rgba(79,116,255,.28);color:#8ab4ff;">⚡ Live analysis</span>
+          <span class="badge" style="background:rgba(79,116,255,.12);border:1px solid rgba(79,116,255,.28);color:#8ab4ff;">Pattern detect</span>
+          <span class="badge" style="background:rgba(79,116,255,.12);border:1px solid rgba(79,116,255,.28);color:#8ab4ff;">Entropy score</span>
+        </div>
+        <a class="btn btn-primary w-100 mt-auto" href="{{ url_for('password_checker') }}">
+          <i class="bi bi-shield-lock"></i> Open Tool
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- URL Scanner -->
+  <div class="col-md-4 fade-up">
+    <div class="card h-100 tool-card" style="--g-card:var(--g-primary);">
+      <div class="tc-glow" style="background:radial-gradient(ellipse at 30% 20%,rgba(155,94,255,.16),transparent 65%);"></div>
+      <div class="tc-stripe" style="background:linear-gradient(90deg,var(--violet),var(--blue));"></div>
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-start gap-3 mb-4">
+          <div class="tool-icon" style="background:rgba(155,94,255,.12);border-color:rgba(155,94,255,.25);">🕵️</div>
+          <div>
+            <h5 class="mb-1">Phishing URL Detector</h5>
+            <p class="mb-0" style="font-size:.82rem;">Heuristic scan for suspicious tokens, malicious patterns & HTTPS status.</p>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-4" style="font-size:.68rem;">
+          <span class="badge" style="background:rgba(155,94,255,.12);border:1px solid rgba(155,94,255,.28);color:#c4a0ff;">HTTPS check</span>
+          <span class="badge" style="background:rgba(155,94,255,.12);border:1px solid rgba(155,94,255,.28);color:#c4a0ff;">Token analysis</span>
+          <span class="badge" style="background:rgba(155,94,255,.12);border:1px solid rgba(155,94,255,.28);color:#c4a0ff;">Risk rating</span>
+        </div>
+        <a class="btn btn-primary w-100 mt-auto" href="{{ url_for('url_scanner') }}">
+          <i class="bi bi-radar"></i> Open Tool
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Checker -->
+  <div class="col-md-4 fade-up">
+    <div class="card h-100 tool-card">
+      <div class="tc-glow" style="background:radial-gradient(ellipse at 30% 20%,rgba(14,246,204,.11),transparent 65%);"></div>
+      <div class="tc-stripe" style="background:var(--g-success);"></div>
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex align-items-start gap-3 mb-4">
+          <div class="tool-icon" style="background:rgba(14,246,204,.1);border-color:rgba(14,246,204,.22);">📄</div>
+          <div>
+            <h5 class="mb-1">File Integrity Checker</h5>
+            <p class="mb-0" style="font-size:.82rem;">Drag-and-drop any file to generate a SHA256 fingerprint.</p>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-4" style="font-size:.68rem;">
+          <span class="badge" style="background:rgba(14,246,204,.1);border:1px solid rgba(14,246,204,.25);color:#0ef6cc;">🔑 SHA256</span>
+          <span class="badge" style="background:rgba(14,246,204,.1);border:1px solid rgba(14,246,204,.25);color:#0ef6cc;">Drag & drop</span>
+          <span class="badge" style="background:rgba(14,246,204,.1);border:1px solid rgba(14,246,204,.25);color:#0ef6cc;">Any file type</span>
+        </div>
+        <a class="btn btn-primary w-100 mt-auto" href="{{ url_for('file_checker') }}">
+          <i class="bi bi-fingerprint"></i> Open Tool
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scan History ───────────────────────────────────────── -->
+<div class="d-flex align-items-center gap-2 mb-4 fade-up">
+  <div class="section-bar" style="background:var(--g-success);"></div>
+  <h5 class="mb-0">Recent Activity</h5>
+  <span class="badge ms-1" style="background:rgba(14,246,204,.08);border:1px solid rgba(14,246,204,.2);color:#0ef6cc;font-size:.66rem;">Last 10 scans</span>
+</div>
+
+{% if recent_scans %}
+<div class="card fade-up" style="overflow:auto;">
+  <div class="card-body p-0">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th>Input</th>
+          <th>Result</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in recent_scans %}
+        <tr>
+          <td>
+            {% if s['scan_type'] == 'password_checker' %}
+              <span class="badge" style="background:rgba(79,116,255,.12);border:1px solid rgba(79,116,255,.25);color:#8ab4ff;">🔐 Password</span>
+            {% elif s['scan_type'] == 'url_scanner' %}
+              <span class="badge" style="background:rgba(155,94,255,.12);border:1px solid rgba(155,94,255,.25);color:#c4a0ff;">🕵️ URL</span>
+            {% else %}
+              <span class="badge" style="background:rgba(14,246,204,.1);border:1px solid rgba(14,246,204,.22);color:#0ef6cc;">📄 File</span>
+            {% endif %}
+          </td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);" title="{{ s['input_value'] }}">{{ s['input_value'] or '—' }}</td>
+          <td style="font-size:.82rem;">{{ s['result'] }}</td>
+          <td style="color:var(--muted-2);font-size:.78rem;white-space:nowrap;">{{ s['created_at'][:16].replace('T',' ') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card fade-up p-5 text-center" style="border-style:dashed;border-color:rgba(79,116,255,.18);">
+  <div style="font-size:2.5rem;margin-bottom:.75rem;">🔍</div>
+  <h6 class="mb-2">No scans yet</h6>
+  <p class="mb-3" style="font-size:.85rem;">Run your first security scan using one of the tools above.</p>
+  <a class="btn btn-primary btn-sm mx-auto" style="width:fit-content;" href="{{ url_for('password_checker') }}">
+    <i class="bi bi-shield-lock"></i> Start with Password Analyzer
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}
