@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block body_classes %}auth-page login-page{% endblock %}
+
+{% block content %}
+
+<!-- ── Dedicated login background canvas ── -->
+<canvas id="login-bg" aria-hidden="true"></canvas>
+
+<!-- 3D Rotating Cubes Decor -->
+<div class="cubes-wrap" aria-hidden="true">
+  <div class="cube-3d cube-1">
+    <div class="face front"></div><div class="face back"></div>
+    <div class="face right"></div><div class="face left"></div>
+    <div class="face top"></div><div class="face bottom"></div>
+  </div>
+  <div class="cube-3d cube-2">
+    <div class="face front"></div><div class="face back"></div>
+    <div class="face right"></div><div class="face left"></div>
+    <div class="face top"></div><div class="face bottom"></div>
+  </div>
+  <div class="cube-3d cube-3">
+    <div class="face front"></div><div class="face back"></div>
+    <div class="face right"></div><div class="face left"></div>
+    <div class="face top"></div><div class="face bottom"></div>
+  </div>
+  <div class="cube-3d cube-4">
+    <div class="face front"></div><div class="face back"></div>
+    <div class="face right"></div><div class="face left"></div>
+    <div class="face top"></div><div class="face bottom"></div>
+  </div>
+</div>
+
+<div class="auth-outer" style="position:relative;z-index:2;">
+  <div class="login-card-solo">
+    <!-- Decorative background shapes inside the glass card -->
+    <div class="card-deco-shape deco-2"></div>
+    <div class="cyber-scanline"></div>
+    <div class="border-tracer"></div>
+
+    <!-- Brand logo -->
+    <div class="text-center mb-3 animate-staggered" style="animation-delay: 0.2s;">
+      <div class="login-brand-icon">🛡️</div>
+      <h3 class="mb-0 mt-2 glitch-text">Welcome back</h3>
+      <p class="mb-0" style="font-size:0.85rem;">Sign in to your CyberShield account</p>
+    </div>
+
+    <form method="post" action="{{ url_for('login') }}" novalidate>
+
+      <div class="mb-3 animate-staggered" style="animation-delay: 0.35s;">
+        <label for="username_or_email" class="form-label">Username or Email</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+          <input type="text" class="form-control" id="username_or_email"
+            name="username_or_email" placeholder="you@example.com"
+            autocomplete="username" required />
+        </div>
+      </div>
+
+      <div class="mb-3 animate-staggered" style="animation-delay: 0.5s;">
+        <label for="login-pwd" class="form-label">
+          <i class="bi bi-key-fill me-1"></i> Password
+        </label>
+        <div class="input-group pwd-field-wrap">
+          <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+          <input type="password" class="form-control" id="login-pwd"
+            name="password" placeholder="••••••••"
+            autocomplete="current-password" required />
+          <button type="button" class="toggle-pwd" data-for="#login-pwd" aria-label="Show password">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" id="login-btn" class="btn btn-primary w-100 py-2 mb-3 animate-staggered" style="animation-delay: 0.65s;">
+        <i class="bi bi-arrow-right-circle"></i> Sign in
+      </button>
+    </form>
+
+    <div class="cs-divider"></div>
+
+    <p class="text-center mb-0 animate-staggered" style="font-size:0.85rem;color:var(--muted);animation-delay: 0.8s;">
+      No account yet? <a href="{{ url_for('register') }}" style="color:var(--blue);font-weight:700;">Create one free →</a>
+    </p>
+  </div>
+</div>
+
+<!-- ─────── 3D perspective grid canvas JS ─────── -->
+<script>
+(function(){
+  const canvas = document.getElementById('login-bg');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, t = 0;
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize, {passive:true});
+
+  /* Horizon horizon (0 = top of grid, set to 45% down) */
+  const HORIZON = 0.46;
+
+  function drawGrid(){
+    const hy = H * HORIZON;           // horizon y
+    const vx = W * 0.5;               // vanishing-point x (center)
+    const COLS = 20;                   // vertical lines
+    const ROWS = 20;                   // horizontal lines
+    const SPEED = 0.006;
+    const offset = (t * SPEED) % (1/ROWS); // scroll offset for forward motion
+
+    ctx.save();
+    ctx.globalAlpha = 1;
+
+    /* Horizontal lines (recede toward horizon) */
+    for(let r = 0; r <= ROWS; r++){
+      const p = (r / ROWS + offset) % 1;  // 0 (horizon) → 1 (near bottom)
+      const eased = Math.pow(p, 2.4);     // perspective ease
+      const y = hy + (H - hy) * eased;
+      const alpha = Math.min(1, p * 2.5) * 0.55;
+      const hue = 210 + p * 60;           // blue → violet as lines approach
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.strokeStyle = `hsla(${hue},100%,65%,${alpha})`;
+      ctx.lineWidth = Math.max(0.4, p * 1.5);
+      ctx.stroke();
+    }
+
+    /* Vertical lines (fan out from vanishing point) */
+    for(let c = 0; c <= COLS; c++){
+      const norm = c / COLS;                       // 0 → 1 left to right
+      const farX  = vx + (norm - 0.5) * W * 0.9;   // spread at horizon
+      const nearX = norm * W * 1.15 - W * 0.075;   // spread at bottom
+      const alpha = 0.38 + Math.abs(norm - 0.5) * 0.3;
+      const hue   = 240 - Math.abs(norm - 0.5) * 100;
+      ctx.beginPath();
+      ctx.moveTo(farX, hy);
+      ctx.lineTo(nearX, H);
+      ctx.strokeStyle = `hsla(${hue},100%,68%,${alpha * 0.55})`;
+      ctx.lineWidth   = 0.7;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawSkyGlow(){
+    /* Deep aurora behind horizon */
+    const g = ctx.createRadialGradient(W/2, H * HORIZON, 0, W/2, H * HORIZON, W * 0.6);
+    g.addColorStop(0,   'rgba(79,116,255,0.18)');
+    g.addColorStop(0.5, 'rgba(155,94,255,0.09)');
+    g.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H * HORIZON + 60);
+  }
+
+  function drawScanLine(){
+    /* Slow horizontal green scanline sweeping down the sky section */
+    const sy = (H * HORIZON * ((Math.sin(t * 0.012) + 1) / 2));
+    const g  = ctx.createLinearGradient(0, sy - 4, 0, sy + 4);
+    g.addColorStop(0,   'rgba(14,246,204,0)');
+    g.addColorStop(0.5, 'rgba(14,246,204,0.35)');
+    g.addColorStop(1,   'rgba(14,246,204,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, sy, W, 8);
+  }
+
+  function drawHorizonGlow(){
+    const g = ctx.createLinearGradient(0, H * HORIZON - 30, 0, H * HORIZON + 30);
+    g.addColorStop(0,   'rgba(79,116,255,0)');
+    g.addColorStop(0.5, 'rgba(79,116,255,0.55)');
+    g.addColorStop(1,   'rgba(79,116,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, H * HORIZON - 4, W, 8);
+  }
+
+  function drawStars(){
+    const starCount = 90;
+    const seed = 42;
+    for(let i = 0; i < starCount; i++){
+      // pseudo-random positions seeded by index
+      const sx = ((Math.sin(i * 3.7 + seed) + 1) / 2) * W;
+      const sy = ((Math.sin(i * 1.9 + seed * 2) + 1) / 2) * (H * HORIZON);
+      const tw = (Math.sin(t * 0.02 + i) + 1) / 2;
+      const a  = tw * 0.55 + 0.1;
+      const r  = Math.random() < 0.1 ? 1.5 : 0.7;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,200,255,${a})`;
+      ctx.fill();
+    }
+  }
+
+  /* Floating glowing orbs in sky */
+  const orbs = Array.from({length:5}, (_, i) => ({
+    x: 0.15 + (i / 4) * 0.7,
+    y: 0.05 + (i % 3) * 0.12,
+    r: 60 + i * 30,
+    speed: 0.003 + i * 0.0015,
+    hue: 220 + i * 30,
+  }));
+
+  function drawOrbs(){
+    orbs.forEach(o => {
+      const ox = (o.x + Math.sin(t * o.speed) * 0.04) * W;
+      const oy = (o.y + Math.cos(t * o.speed) * 0.03) * H * HORIZON;
+      const g  = ctx.createRadialGradient(ox, oy, 0, ox, oy, o.r);
+      g.addColorStop(0,   `hsla(${o.hue},100%,70%,0.1)`);
+      g.addColorStop(1,   `hsla(${o.hue},100%,70%,0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(ox, oy, o.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function loop(){
+    ctx.clearRect(0, 0, W, H);
+
+    /* Sky base gradient */
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * HORIZON);
+    skyGrad.addColorStop(0, 'rgba(2,3,18,1)');
+    skyGrad.addColorStop(1, 'rgba(5,8,30,1)');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    drawOrbs();
+    drawStars();
+    drawSkyGlow();
+    drawScanLine();
+    drawGrid();
+    drawHorizonGlow();
+
+    /* Ground fade below grid */
+    const groundGrad = ctx.createLinearGradient(0, H*HORIZON, 0, H);
+    groundGrad.addColorStop(0, 'rgba(4,6,20,0)');
+    groundGrad.addColorStop(1, 'rgba(3,5,16,1)');
+    ctx.fillStyle = groundGrad;
+    ctx.fillRect(0, H * HORIZON, W, H);
+
+    t++;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+{% endblock %}
